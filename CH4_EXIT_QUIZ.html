@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CH4_EXIT_QUIZ</title>
+<style>
+  body{
+    background:#111;color:#fff;font-family:Arial,sans-serif;
+    display:flex;justify-content:center;padding:30px 10px;
+  }
+  .wrap{
+    width:650px;background:#1e1e1e;border-radius:12px;
+    padding:22px 22px 18px 22px;box-shadow:0 0 18px rgba(0,0,0,0.55);
+  }
+  .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;opacity:0.9;}
+  .qtext{font-size:16px;line-height:1.35;margin:10px 0 14px 0;}
+  .opt{
+    display:block;width:100%;text-align:left;padding:10px 12px;margin:8px 0;
+    border-radius:8px;border:1px solid #333;background:#2a2a2a;color:#fff;
+    cursor:pointer;font-size:15px;
+  }
+  .opt:hover{background:#333;}
+  .opt:disabled{cursor:default;opacity:0.95;}
+  .fb{margin-top:12px;font-weight:bold;min-height:22px;}
+  .ok{color:#00ff88;}
+  .no{color:#ff5555;}
+  .controls{margin-top:14px;display:flex;gap:10px;}
+  .btn{padding:9px 14px;border:none;border-radius:8px;background:#2ecc71;color:#000;font-weight:bold;cursor:pointer;}
+  .btn:hover{background:#27ae60;}
+  .btn.secondary{background:#3a86ff;color:#000;}
+  .btn.secondary:hover{background:#2f76e0;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="meta">
+      <div id="progress">Question 1 / 1</div>
+      <div id="scoreMini">Score: 0</div>
+    </div>
+
+    <div id="qtext" class="qtext"></div>
+    <div id="options"></div>
+    <div id="feedback" class="fb"></div>
+
+    <div class="controls">
+      <button id="nextBtn" class="btn secondary" style="display:none;">Next</button>
+      <button id="restartBtn" class="btn" style="display:none;">Restart</button>
+    </div>
+  </div>
+
+<script>
+const BANK = [{"q": "The linear speed(s) of all points on a spinning rod (with constant ω) are", "options": ["the same", "different", "depends on the situation"], "answer": 1}, {"q": "As a linear rod that rotates about its lower end rotates clockwise, the angular acceleration and angular speeds are", "options": ["90° out of phase", "0° out of phase", "180° out of phase", "none of these apply"], "answer": 0}, {"q": "Two fidget spinners start with the same ω but one has weight on the inner part of the flaps (spinner X) while the other one (spinner Y) has more weight on the outer part of the flaps. The spinners are otherwise identical. Which one will stop first?", "options": ["X", "Y", "both at the same time"], "answer": 0}, {"q": "The constant force of 2 N acts perpendicularly on a uniform rod with I=1 Kg m² that can spin about its center and has a length of 1 m. The force acts 0.5 m from the end of the rod. The rod’s angular acceleration will be", "options": ["0 rad/s²", "1 rad/s²", "0.5 rad/s²", "none of these"], "answer": 0}, {"q": "Which way is more efficient to balance a hammer on your index finger?", "options": ["when the head of the hammer is away from your finger", "when the head of the hammer is touching your finger", "it makes no difference"], "answer": 0}, {"q": "A rigid object has a moment about its center of mass I = 1 Kg m². Its moment about 0.1 m away from its center of mass will be", "options": ["1.01 Kg m²", "1.02 Kg m²", ".01 Kg m²", "it cannot be derived given the available data"], "answer": 3}, {"q": "A non uniform rod of length L, mass M and moment about its center I. If we need to find its moment about its end, we can use the parallel axis theorem and get", "options": ["I + ML²/4", "I + ML²/2", "I + ML²", "more information is required"], "answer": 3}, {"q": "A rod is rotating about its lower end and rotates clockwise, starting from some angle with respect to the vertical. Right before it becomes parallel to the ground the rod has", "options": ["maximum linear acceleration", "maximum angular acceleration", "maximum linear speed", "none of these apply"], "answer": 1}, {"q": "A uniform disk is mounted at the end of a uniform rod. Their combined moment of inertia is", "options": ["dependent on whether the disk can spin at the mounting position", "not dependent on whether the disk can spin at the mounting position"], "answer": 0}, {"q": "A disk pulley has two masses hung left and right vs. a dummy pulley with the same masses hung left and right. The linear acceleration of the masses will be", "options": ["greater in the case of the dummy pulley", "greater in the case of the disk-pulley", "no difference"], "answer": 0}, {"q": "No-slip condition for a pulley with two masses hung left and right means that", "options": ["all points on the pulley have the same angular acceleration", "the two hung masses are not moving", "the pulley’s rim and both masses have the same linear acceleration", "none of these"], "answer": 2}, {"q": "When a disk pulley has two masses hung left and right and the system is moving then the pulley will", "options": ["spin faster and faster", "spin at a constant angular speed", "spin slower and slower", "none of these"], "answer": 0}, {"q": "When a yoyo unwinds under the influence of gravity, then the more thickness of the string wrapped inside the yoyo the", "options": ["faster the yoyo will move down", "the slower the yoyo will move down", "it makes no difference"], "answer": 0}, {"q": "You are on a spinning merry-go-round and you start walking towards the center. The merry-go-round will start spinning", "options": ["faster", "slower", "it will make no difference"], "answer": 0}, {"q": "You are on a spinning merry-go-round and you start walking towards the center. The reason the motion of the system you+merry-go-round is that", "options": ["friction is doing the work", "the centrifugal is doing work", "you are doing the work", "no one is doing work"], "answer": 2}, {"q": "A ring of radius 2 m has initial speed of 1 m/s and angular speed of 0.5 rad/s. The disk is left to move on an icy surface. The disk will immediately start", "options": ["rolling", "skidding", "skidding then rolling", "rolling then skidding"], "answer": 0}, {"q": "A marble rolls on a horizontal surface and at some point comes to a full stop. The same marble rolls on another horizontal surface and at some point comes to a full stop but covers greater distance than on the previous surface. What we glean from this experiment is that", "options": ["the two surfaces have different friction", "the two surfaces have different level of abnormalities aka bumps", "no comparison can be made"], "answer": 1}, {"q": "A marble rolls on a horizontal surface and at some point it starts skidding. What happened to the marble is that", "options": ["an external force acted on the marble", "the marble transitioned to a low friction area"], "answer": 0}, {"q": "You pull two identical yo-yos on a rough horizontal surface with the same horizontal force. One yo-yo has more string wrapped around it (yo-yo A) and eventually the pulling force is applied further away from its center of mass than the second yo-yo that has less string wrapped around it (yo-yo B). Which yo-yo will be moving faster if we assume that both yo-yos are rolling?", "options": ["yo-yo A", "yo-yo B", "same speed", "more info is needed"], "answer": 0}, {"q": "You pull two identical yo-yos on a frictionless horizontal surface with the same horizontal force. One yo-yo has more string wrapped around it (yo-yo A) and eventually the pulling force is applied further away from its center of mass than the second yo-yo that has less string wrapped around it (yo-yo B). Which yo-yo will be moving faster if we assume that both yo-yos are rolling?", "options": ["yo-yo A", "yo-yo B", "same speed", "more info is needed"], "answer": 2}, {"q": "A beaker containing ice is mounted on a rod that spins with some initial angular speed. As the time goes by, the ice begins to melt. What will happen to the angular speed of the beaker when all the ice has melted? [ignore all sorts of resistances]", "options": ["it will slow down", "it will speed up", "there will be no change"], "answer": 0}];
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+}
+
+let idx=0;
+let score=0;
+let locked=false;
+let current=null;
+
+const progressEl=document.getElementById("progress");
+const scoreMiniEl=document.getElementById("scoreMini");
+const qtextEl=document.getElementById("qtext");
+const optionsEl=document.getElementById("options");
+const feedbackEl=document.getElementById("feedback");
+const nextBtn=document.getElementById("nextBtn");
+const restartBtn=document.getElementById("restartBtn");
+
+function renderQuestion(){
+  locked=false;
+  feedbackEl.textContent="";
+  feedbackEl.className="fb";
+  nextBtn.style.display="none";
+  restartBtn.style.display="none";
+
+  current=BANK[idx];
+  progressEl.textContent = "Question " + (idx+1) + " / " + BANK.length;
+  scoreMiniEl.textContent = "Score: " + score;
+  qtextEl.textContent = current.q;
+
+  const perm=[...Array(current.options.length).keys()];
+  shuffle(perm);
+
+  optionsEl.innerHTML="";
+  perm.forEach((origIndex, displayIndex)=>{
+    const btn=document.createElement("button");
+    btn.className="opt";
+    btn.textContent=String.fromCharCode(65+displayIndex)+") "+current.options[origIndex];
+    btn.addEventListener("click", ()=>choose(origIndex));
+    optionsEl.appendChild(btn);
+  });
+}
+
+function lockOptions(){
+  Array.from(optionsEl.querySelectorAll("button")).forEach(b=>b.disabled=true);
+  locked=true;
+}
+
+function choose(origIndex){
+  if(locked) return;
+  lockOptions();
+
+  if(origIndex===current.answer){
+    feedbackEl.textContent="✅ Correct!";
+    feedbackEl.classList.add("ok");
+    score+=1;
+    scoreMiniEl.textContent="Score: " + score;
+  } else {
+    feedbackEl.textContent="❌ Incorrect.";
+    feedbackEl.classList.add("no");
+  }
+
+  if(idx < BANK.length - 1){
+    nextBtn.style.display="inline-block";
+  } else {
+    restartBtn.style.display="inline-block";
+    progressEl.textContent="Complete";
+    qtextEl.textContent="Quiz Complete! Your Score: " + score + " / " + BANK.length;
+    optionsEl.innerHTML="";
+    nextBtn.style.display="none";
+  }
+}
+
+nextBtn.addEventListener("click", ()=>{
+  if(idx < BANK.length - 1){
+    idx += 1;
+    renderQuestion();
+  }
+});
+
+restartBtn.addEventListener("click", ()=>{
+  idx=0;
+  score=0;
+  renderQuestion();
+});
+
+renderQuestion();
+</script>
+</body>
+</html>

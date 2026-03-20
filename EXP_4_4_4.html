@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_4_4_4.html</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
+<style>
+body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: monospace;
+    padding: 15px;
+}
+
+.editor {
+    display: flex;
+    border: 1px solid #444;
+    height: 340px;
+}
+
+#lineNumbers {
+    background: #111;
+    color: #00ff00;
+    padding: 10px 8px;
+    margin: 0;
+    text-align: right;
+    overflow: hidden;
+    white-space: pre;
+}
+
+#code {
+    flex: 1;
+    background: #111;
+    color: white;
+    border: none;
+    padding: 10px;
+    resize: none;
+    overflow: auto;
+    white-space: pre;
+}
+
+button {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: #007acc;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#output {
+    background: #111;
+    padding: 10px;
+    margin-top: 10px;
+    min-height: 80px;
+    white-space: pre-wrap;
+}
+
+#plot {
+    margin-top: 15px;
+    background: white;
+    padding: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h3>EXP_4_4_4.html</h3>
+
+<div class="editor">
+<pre id="lineNumbers"></pre>
+<textarea id="code" wrap="off">import matplotlib
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+plt.rcParams.update({
+    'figure.facecolor': 'white',
+    'axes.facecolor': 'white',
+})
+
+import numpy as np
+
+from scipy.integrate import solve_ivp
+
+# Constants
+m = 0.5                 # mass of marble (kg)
+I0 = 21.32              # moment of inertia of the tube (kg·m²)
+omega_i = 0.0261         # initial angular speed (rad/s)
+ri = 21.8               # initial radius of the marble (m)
+drdt0 = -1.14            # initial inward radial speed (m/s)
+
+# Initial angular momentum (conserved)
+L = (I0 + m * ri**2) * omega_i
+
+# Radial equation of motion
+def radial_eq(t, y):
+    r, drdt = y
+    d2rdt2 = (L**2 * r) / ((I0 + m * r**2)**2)
+    return [drdt, d2rdt2]
+
+# Initial state
+y0 = [ri, drdt0]
+
+# Time span and evaluation points
+t_span = (0, 25)
+t_eval = np.linspace(t_span[0], t_span[1], 1000)
+
+# Solve the ODE
+sol = solve_ivp(radial_eq, t_span, y0, t_eval=t_eval, rtol=1e-9, atol=1e-9)
+
+# Extract solution
+t = sol.t
+r = sol.y[0]
+drdt = sol.y[1]
+
+# Angular speed from angular momentum conservation
+omega = L / (I0 + m * r**2)
+
+# Tangential and total speed
+v_tangent = r * omega
+v_total = np.sqrt(drdt**2 + v_tangent**2)
+
+# Plot speed over time
+plt.figure(figsize=(10, 5))
+plt.plot(t, v_total, label='Total Speed (model)', color='blue')
+plt.xlabel('Time [s]')
+plt.ylabel('Speed [m/s]')
+plt.title('Marble Speed Over Time (Inward Motion Case)')
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.show()
+</textarea>
+</div>
+
+<button onclick="runCode()">Run</button>
+<button onclick="savePlot('png')">Save PNG</button>
+<button onclick="savePlot('svg')">Save SVG</button>
+<button onclick="savePlot('pdf')">Save PDF</button>
+
+<div id="output"></div>
+<div id="plot"></div>
+
+<script>
+let pyodideReady = loadPyodide();
+let pyodide;
+
+const codeEl = document.getElementById("code");
+const lineNumbers = document.getElementById("lineNumbers");
+
+function updateLineNumbers() {
+    const lines = codeEl.value.split("\n").length;
+    let nums = "";
+    for (let i = 1; i <= lines; i++) nums += i + "\n";
+    lineNumbers.textContent = nums;
+}
+
+codeEl.addEventListener("input", updateLineNumbers);
+codeEl.addEventListener("scroll", () => lineNumbers.scrollTop = codeEl.scrollTop);
+updateLineNumbers();
+
+async function runCode() {
+    pyodide = await pyodideReady;
+    document.getElementById("output").innerText = "Running...";
+
+    await pyodide.loadPackage(["numpy", "matplotlib", "scipy"]);
+
+    try {
+        await pyodide.runPythonAsync(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+`);
+
+        await pyodide.runPythonAsync(codeEl.value);
+
+        let out = await pyodide.runPythonAsync("sys.stdout.getvalue()");
+        document.getElementById("output").innerText = out;
+
+        const img = await pyodide.runPythonAsync(`
+import base64
+from io import BytesIO
+buf = BytesIO()
+plt.savefig(buf, format="png")
+buf.seek(0)
+base64.b64encode(buf.read()).decode()
+`);
+
+        document.getElementById("plot").innerHTML =
+            "<img id='plotImage' src='data:image/png;base64," + img + "'/>";
+
+    } catch(err) {
+        document.getElementById("output").innerText = err;
+    }
+}
+
+function savePlot(format) {
+    const img = document.getElementById("plotImage");
+    if (!img) return;
+    const link = document.createElement('a');
+    link.href = img.src;
+    link.download = "plot." + format;
+    link.click();
+}
+</script>
+
+</body>
+</html>

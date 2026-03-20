@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_4_7_4_quiz</title>
+<style>
+body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+.container {
+    width: 650px;
+    margin: auto;
+}
+.question {
+    margin-bottom: 22px;
+}
+button {
+    padding: 6px 12px;
+    margin-top: 5px;
+}
+.correct { color: #00ff88; }
+.incorrect { color: #ff5555; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>EXP_4_7_4 Quiz</h2>
+<div id="quiz"></div>
+<div id="score"></div>
+</div>
+
+<script>
+const questions = [
+{
+q: "Until rolling is achieved",
+options: [
+"Linear speed is increased and angular is decreased",
+"Linear speed is decreased and angular is increased",
+"Both linear and angular speeds increase",
+"Both linear and angular speeds decrease"
+],
+answer: 0
+},
+{
+q: "If the friction is increased to μ = 0.15 then the time until rolling conditions is",
+options: [
+"shorter than when μ = 0.1",
+"longer time than when μ = 0.1",
+"There is no difference as far as the time elapsed for different friction"
+],
+answer: 0
+},
+{
+q: "If the friction is reduced to μ = 0.05 then the time until rolling conditions is",
+options: [
+"shorter than when μ = 0.1",
+"longer time than when μ = 0.1",
+"There is no difference as far as the time elapsed for different friction"
+],
+answer: 1
+},
+{
+q: "If the friction is increased to μ = 0.15 then the distance until rolling conditions is",
+options: [
+"shorter than when μ = 0.1",
+"longer time than when μ = 0.1",
+"There is no difference for different friction"
+],
+answer: 0
+},
+{
+q: "As long as friction is not zero, in the final rolling conditions",
+options: [
+"Both linear and angular speeds are independent of friction magnitude",
+"The linear speed will always be dependent but angular speed isn’t",
+"Angular speed is dependent but linear speed isn’t",
+"Both linear and angular speeds are dependent on friction"
+],
+answer: 0
+},
+{
+q: "Since the only force that exists is friction then its most probable role is to",
+options: [
+"Converting rotational kinetic to linear kinetic energy",
+"Converting linear kinetic energy to rotational kinetic",
+"Converting all energy to heat"
+],
+answer: 0
+}
+];
+
+let score = 0;
+let answered = 0;
+
+function shuffle(array){
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function loadQuiz(){
+    const quizDiv = document.getElementById("quiz");
+    questions.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        const q = document.createElement("p");
+        q.textContent = (index+1) + ". " + item.q;
+        div.appendChild(q);
+
+        let opts = item.options.map((opt,i)=>({text:opt, correct:i===item.answer}));
+        shuffle(opts);
+
+        opts.forEach(opt=>{
+            const btn = document.createElement("button");
+            btn.textContent = opt.text;
+            btn.onclick = function(){
+                if(btn.disabled) return;
+                answered++;
+                if(opt.correct){
+                    btn.className="correct";
+                    score++;
+                } else {
+                    btn.className="incorrect";
+                }
+                div.querySelectorAll("button").forEach(b=>b.disabled=true);
+                if(answered===questions.length){
+                    document.getElementById("score").innerHTML = 
+                        "<h3>Final Score: " + score + " / " + questions.length + "</h3>";
+                }
+            };
+            div.appendChild(btn);
+            div.appendChild(document.createElement("br"));
+        });
+
+        quizDiv.appendChild(div);
+    });
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>

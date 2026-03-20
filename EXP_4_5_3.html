@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_4_5_3.html</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
+<style>
+body {
+  background-color:#1e1e1e;
+  color:white;
+  font-family: monospace;
+  padding:15px;
+}
+.editor {
+  display:flex;
+  border:1px solid #444;
+  height:340px;
+}
+#lineNumbers {
+  background:#111;
+  color:#00ff00;
+  padding:10px 8px;
+  margin:0;
+  text-align:right;
+  overflow:hidden;
+  white-space:pre;
+}
+#code {
+  flex:1;
+  background:#111;
+  color:white;
+  border:none;
+  padding:10px;
+  resize:none;
+  overflow:auto;
+  white-space:pre;
+}
+button {
+  margin-top:10px;
+  margin-right:6px;
+  padding:8px 14px;
+  background:#007acc;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+#output {
+  background:#111;
+  padding:10px;
+  margin-top:10px;
+  min-height:120px;
+  white-space:pre-wrap;
+}
+#plot {
+  margin-top:15px;
+  background:white;
+  padding:10px;
+  border-radius:8px;
+}
+#plotButtons {
+  margin-top:10px;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+<h3>EXP_4_5_3.html</h3>
+
+<div class="editor">
+  <pre id="lineNumbers"></pre>
+  <textarea id="code" wrap="off">import numpy as np
+import matplotlib.pyplot as plt
+
+# Given parameters
+G = 1.0           # gravitational constant [custom units]
+M = 100.0         # mass of planet [custom units]
+R = 1.5           # radius of planet [custom units]
+
+# Initial conditions
+x = 0.0
+y = R+0.01
+vx = 4.55         # initial horizontal velocity
+vy = 7.9          # initial vertical velocity
+
+# Time setup
+dt = 0.005         # time step (small because of faster motion)
+t_max = 20        # max time
+n_steps = int(t_max / dt)
+
+# Storage arrays
+x_vals = []
+y_vals = []
+r_vals = []
+t_vals = []
+
+for step in range(n_steps):
+    r = np.sqrt(x**2 + y**2)
+    if r < R:
+        print(f"\n💥 Projectile hit the planet at t = {step * dt:.2f} s\n")
+        break
+
+    # Save current state
+    x_vals.append(x)
+    y_vals.append(y)
+    r_vals.append(r)
+    t_vals.append(step * dt)
+
+    # Acceleration due to gravity
+    ax = -G * M * x / r**3
+    ay = -G * M * y / r**3
+
+    # Update velocity
+    vx += ax * dt
+    vy += ay * dt
+
+    # Update position
+    x += vx * dt
+    y += vy * dt
+
+# Convert to numpy arrays
+x_vals = np.array(x_vals)
+y_vals = np.array(y_vals)
+r_vals = np.array(r_vals)
+t_vals = np.array(t_vals)
+
+# Print first 500 rows
+print("First 500 data points:")
+print("Time (s)    x           y           r")
+for i in range(min(500, len(t_vals))):
+    print(f"{t_vals[i]:8.2f}  {x_vals[i]:11.5f}  {y_vals[i]:11.5f}  {r_vals[i]:11.5f}")
+
+# Optional plot
+plt.figure(figsize=(6, 6))
+plt.plot(x_vals, y_vals, label="Projectile Path")
+theta = np.linspace(0, 2*np.pi, 300)
+plt.fill(R*np.cos(theta), R*np.sin(theta), color='lightblue', alpha=0.5, label="Planet")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Projectile Trajectory with G=1, M=100, R=1.5")
+plt.grid(True)
+plt.axis("equal")
+plt.legend()
+plt.show()
+</textarea>
+</div>
+
+<div>
+  <button id="runBtn" onclick="runCode()">Run</button>
+</div>
+
+<div id="plotButtons">
+  <button onclick="downloadPlot('png')">Save PNG</button>
+  <button onclick="downloadPlot('pdf')">Save PDF</button>
+  <button onclick="downloadPlot('svg')">Save SVG</button>
+</div>
+
+<div id="output"></div>
+<div id="plot"></div>
+
+<script>
+let pyodideReady = loadPyodide();
+let pyodide = null;
+
+const codeEl = document.getElementById("code");
+const lineNumbers = document.getElementById("lineNumbers");
+const plotDiv = document.getElementById("plot");
+const outDiv = document.getElementById("output");
+const plotButtons = document.getElementById("plotButtons");
+
+function updateLineNumbers() {
+  const lines = codeEl.value.split("\n").length;
+  let nums = "";
+  for (let i=1;i<=lines;i++) nums += i + "\n";
+  lineNumbers.textContent = nums;
+}
+codeEl.addEventListener("input", updateLineNumbers);
+codeEl.addEventListener("scroll", () => lineNumbers.scrollTop = codeEl.scrollTop);
+updateLineNumbers();
+
+async function runCode() {
+  pyodide = await pyodideReady;
+  outDiv.innerText = "Running...";
+  plotDiv.innerHTML = "";
+  plotButtons.style.display = "none";
+
+  await pyodide.loadPackage(["numpy","matplotlib"]);
+
+  try {
+    await pyodide.runPythonAsync(`
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+plt.rcParams.update({
+  'figure.facecolor': 'white',
+  'axes.facecolor': 'white',
+})
+
+import sys, io, base64
+from io import StringIO
+sys.stdout = StringIO()
+`);
+
+    // Run user code
+    await pyodide.runPythonAsync(codeEl.value);
+
+    // Produce files in FS for download + PNG for display
+    await pyodide.runPythonAsync(`
+# Save outputs for download
+plt.tight_layout()
+plt.savefig("plot.png")
+plt.savefig("plot.pdf")
+plt.savefig("plot.svg")
+
+# Also emit base64 png for display
+buf = io.BytesIO()
+plt.savefig(buf, format="png")
+buf.seek(0)
+img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+print("__PLOT__" + img_base64)
+`);
+
+    let out = await pyodide.runPythonAsync("sys.stdout.getvalue()");
+
+    if (out.includes("__PLOT__")) {
+      const parts = out.split("__PLOT__");
+      outDiv.innerText = parts[0];
+      const img = document.createElement("img");
+      img.id = "plotImage";
+      img.src = "data:image/png;base64," + parts[1];
+      img.style.maxWidth = "100%";
+      plotDiv.appendChild(img);
+      plotButtons.style.display = "block";
+    } else {
+      outDiv.innerText = out;
+    }
+  } catch (err) {
+    outDiv.innerText = err;
+  }
+}
+
+function downloadPlot(ext) {
+  try {
+    const data = pyodide.FS.readFile("plot." + ext, {encoding:"binary"});
+    let mime = "application/octet-stream";
+    if (ext === "png") mime = "image/png";
+    if (ext === "pdf") mime = "application/pdf";
+    if (ext === "svg") mime = "image/svg+xml";
+    const blob = new Blob([data], {type: mime});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "plot." + ext;
+    a.click();
+  } catch (e) {
+    alert("Run the code successfully first.");
+  }
+}
+</script>
+
+</body>
+</html>

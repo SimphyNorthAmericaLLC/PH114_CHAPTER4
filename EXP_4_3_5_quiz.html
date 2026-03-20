@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_4_3_5_quiz.html</title>
+<style>
+body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+.container {
+    width: 650px;
+    margin: 40px auto;
+    background: #222;
+    padding: 20px;
+    border-radius: 8px;
+}
+.question { margin-bottom: 12px; font-weight: bold; }
+.option { margin: 5px 0; }
+.feedback { margin-top: 5px; font-weight: bold; }
+.correct { color: #00ff88; }
+.incorrect { color: #ff4c4c; }
+</style>
+</head>
+<body>
+<div class="container">
+<div id="quiz"></div>
+<div id="finalScore" style="margin-top:20px; font-weight:bold;"></div>
+</div>
+
+<script>
+const questions = [{"question": "Combine the equations and solve for the linear acceleration a. The result is", "options": [{"text": "(m2\u2212m1)/(m2+m1+M/2)*g", "correct": true}, {"text": "(m1)/(m2+m1+M/2)*g", "correct": false}, {"text": "(m2)/(m2+m1+M/2)*g", "correct": false}, {"text": "Don\u2019t know and I just want to goo home", "correct": false}]}, {"question": "In a nutshell, the more massive the pulley is the ______ the linear acceleration of the system", "options": [{"text": "Lower", "correct": true}, {"text": "Higher", "correct": false}, {"text": "Pulley has no effect on the acceleration", "correct": false}]}, {"question": "When the pulley was considered a dummy the linear acceleration for both objects was found to be", "options": [{"text": "a = ((m1 \u2212 m2)/(m1 + m2))g", "correct": true}, {"text": "a = ((m1 \u2212 m2)/m2)g", "correct": false}, {"text": "a = ((m1 \u2212 m2)/m1)g", "correct": false}, {"text": "a = ((m1 \u2212 m2)/(m1 + m2))", "correct": false}]}];
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function renderQuiz() {
+    const quizDiv = document.getElementById("quiz");
+    quizDiv.innerHTML = "";
+
+    questions.forEach((q, index) => {
+        shuffle(q.options);
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        const qBlock = document.createElement("div");
+
+        const qTitle = document.createElement("div");
+        qTitle.className = "question";
+        qTitle.innerHTML = (index+1) + ". " + q.question;
+        qBlock.appendChild(qTitle);
+
+        q.options.forEach((opt, i) => {
+            const optDiv = document.createElement("div");
+            optDiv.className = "option";
+            optDiv.innerHTML = `
+                <label>
+                    <input type="radio" name="q${index}" onclick="checkAnswer(${index}, ${opt.correct})">
+                    ${letters[i]}) ${opt.text}
+                </label>
+            `;
+            qBlock.appendChild(optDiv);
+        });
+
+        const feedbackDiv = document.createElement("div");
+        feedbackDiv.id = "feedback" + index;
+        feedbackDiv.className = "feedback";
+        qBlock.appendChild(feedbackDiv);
+
+        quizDiv.appendChild(qBlock);
+    });
+}
+
+let score = 0;
+let answered = new Array(questions.length).fill(false);
+
+function checkAnswer(qIndex, isCorrect) {
+    const feedback = document.getElementById("feedback" + qIndex);
+
+    if (!answered[qIndex]) {
+        answered[qIndex] = true;
+
+        if (isCorrect) {
+            feedback.innerHTML = "✅ Correct!";
+            feedback.className = "feedback correct";
+            score++;
+        } else {
+            feedback.innerHTML = "❌ Incorrect.";
+            feedback.className = "feedback incorrect";
+        }
+    }
+
+    if (answered.every(a => a)) {
+        document.getElementById("finalScore").innerHTML =
+            "Final Score: " + score + " / " + questions.length;
+    }
+}
+
+renderQuiz();
+</script>
+
+</body>
+</html>

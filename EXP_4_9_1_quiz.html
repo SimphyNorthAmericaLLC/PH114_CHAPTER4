@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_4_9_1_quiz</title>
+<style>
+body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+.container {
+    width: 650px;
+    margin: auto;
+}
+.question {
+    margin-bottom: 22px;
+}
+button {
+    padding: 6px 12px;
+    margin-top: 5px;
+}
+.correct { color: #00ff88; }
+.incorrect { color: #ff5555; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>EXP_4_9_1 Quiz</h2>
+<div id="quiz"></div>
+<div id="score"></div>
+</div>
+
+<script>
+const questions = [
+{
+q: "What is the most plausible expression for the minimum friction coefficient μ required to prevent slipping when a force F is applied at an angle φ above the horizontal to a rolling rigid body of moment of inertia I and mass m?",
+options: [
+"μ = (F / (mg - F sinφ)) * (I / (I + mR²))",
+"μ = F cosφ / (mg + F sinφ)",
+"μ = F / (mg) * (I / (I + mR²))",
+"μ = (F cosφ / (mg + 2F sinφ)) * (I / (I + mR²))",
+"μ = (F cosφ / (mg + F sinφ)) * (mR² / (I + mR²))",
+"μ = (F cosφ / (mg + 2F sinφ)) * (I / (I + mR²))",
+"μ = (F cosφ / mg) * (I / (I + mR²))",
+"μ = (F sinφ / (mg + F cosφ)) * (I / (I + mR²))",
+"μ = (F sinφ / mg) * (I / (I + mR²))",
+"μ = (mg - F sinφ) / (F cosφ) * (I / (I + mR²))"
+],
+answer: 0
+}
+];
+
+let score = 0;
+let answered = 0;
+
+function shuffle(array){
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function loadQuiz(){
+    const quizDiv = document.getElementById("quiz");
+    questions.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        const q = document.createElement("p");
+        q.textContent = (index+1) + ". " + item.q;
+        div.appendChild(q);
+
+        let opts = item.options.map((opt,i)=>({text:opt, correct:i===item.answer}));
+        shuffle(opts);
+
+        opts.forEach(opt=>{
+            const btn = document.createElement("button");
+            btn.textContent = opt.text;
+            btn.onclick = function(){
+                if(btn.disabled) return;
+                answered++;
+                if(opt.correct){
+                    btn.className="correct";
+                    score++;
+                } else {
+                    btn.className="incorrect";
+                }
+                div.querySelectorAll("button").forEach(b=>b.disabled=true);
+                document.getElementById("score").innerHTML = 
+                    "<h3>Final Score: " + score + " / " + questions.length + "</h3>";
+            };
+            div.appendChild(btn);
+            div.appendChild(document.createElement("br"));
+        });
+
+        quizDiv.appendChild(div);
+    });
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>

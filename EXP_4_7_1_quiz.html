@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_4_7_1_quiz</title>
+<style>
+body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+.container {
+    width: 650px;
+    margin: auto;
+}
+.question {
+    margin-bottom: 22px;
+}
+button {
+    padding: 6px 12px;
+    margin-top: 5px;
+}
+.correct { color: #00ff88; }
+.incorrect { color: #ff5555; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>EXP_4_7_1 Quiz</h2>
+<div id="quiz"></div>
+<div id="score"></div>
+</div>
+
+<script>
+const questions = [
+{
+q: "When friction is zero (μ = 0), u₀ = 2 m/s and ω₀ = -4 rad/s the ring exhibits",
+options: ["Pure rolling","Skidding","Mix of the two motions"],
+answer: 0
+},
+{
+q: "When friction is zero (μ = 0), u₀ = 2 m/s and ω₀ = -4 rad/s the linear and angular speeds",
+options: ["Remain constant","Linear speed increases and angular decreases","Linear speed decrease and angular increases","None of these apply"],
+answer: 0
+},
+{
+q: "When friction is zero (μ = 0), u₀ = 2 m/s and ω₀ = +4 rad/s (opposite spin) then the ring exhibits",
+options: ["Pure rolling","Skidding","Mix of the two motions"],
+answer: 0
+},
+{
+q: "When friction is non-zero (μ ≠ 0), u₀ = 2 m/s and ω₀ = -4 rad/s then the ring exhibits",
+options: ["Pure rolling","Skidding","Mix of the two motions"],
+answer: 0
+},
+{
+q: "Does the value of friction coefficient (μ = 0.1, μ = 0.2 etc.), u₀ = 2 m/s and ω₀ = -4 rad/s have any effect on the final linear and angular speeds?",
+options: ["No, the final linear and angular speeds remain the same","Yes, the final linear and angular speeds change depending on the value of μ"],
+answer: 0
+},
+{
+q: "Now select a combination of non-rolling initial conditions e.g. u₀ = 2 m/s and ω₀ = -3 rad/s and change the friction as before (μ = 0.2, μ = 0.3 etc...). The result is",
+options: ["The higher the friction the faster the ring acquires rolling status","The higher the friction the slower the ring acquires rolling status","There is no effect on the time"],
+answer: 0
+},
+{
+q: "By selecting a combination of non-rolling initial conditions e.g. u₀ = 2 m/s and ω₀ = -3 rad/s as you increase the friction the final linear and angular speeds",
+options: ["Remain the same","Increases and decreases","Decreases and increases","Both increase","Both decrease"],
+answer: 2
+}
+];
+
+let score = 0;
+let answered = 0;
+
+function shuffle(array){
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function loadQuiz(){
+    const quizDiv = document.getElementById("quiz");
+    questions.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        const q = document.createElement("p");
+        q.textContent = (index+1) + ". " + item.q;
+        div.appendChild(q);
+
+        let opts = item.options.map((opt,i)=>({text:opt, correct:i===item.answer}));
+        shuffle(opts);
+
+        opts.forEach(opt=>{
+            const btn = document.createElement("button");
+            btn.textContent = opt.text;
+            btn.onclick = function(){
+                if(btn.disabled) return;
+                answered++;
+                if(opt.correct){
+                    btn.className="correct";
+                    score++;
+                } else {
+                    btn.className="incorrect";
+                }
+                div.querySelectorAll("button").forEach(b=>b.disabled=true);
+                if(answered===questions.length){
+                    document.getElementById("score").innerHTML = 
+                        "<h3>Final Score: " + score + " / " + questions.length + "</h3>";
+                }
+            };
+            div.appendChild(btn);
+            div.appendChild(document.createElement("br"));
+        });
+
+        quizDiv.appendChild(div);
+    });
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>

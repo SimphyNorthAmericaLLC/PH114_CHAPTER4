@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EXP_4_5_1.html</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
+<style>
+body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: monospace;
+    padding: 15px;
+}
+
+.editor {
+    display: flex;
+    border: 1px solid #444;
+    height: 320px;
+}
+
+#lineNumbers {
+    background: #111;
+    color: #00ff00;
+    padding: 10px 8px;
+    margin: 0;
+    text-align: right;
+    overflow: hidden;
+    white-space: pre;
+}
+
+#code {
+    flex: 1;
+    background: #111;
+    color: white;
+    border: none;
+    padding: 10px;
+    resize: none;
+    overflow: auto;
+    white-space: pre;
+}
+
+button {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: #007acc;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#output {
+    background: #111;
+    padding: 10px;
+    margin-top: 10px;
+    min-height: 100px;
+    white-space: pre-wrap;
+}
+</style>
+</head>
+
+<body>
+
+<h3>EXP_4_5_1.html</h3>
+
+<div class="editor">
+<pre id="lineNumbers"></pre>
+<textarea id="code" wrap="off">import numpy as np
+import pandas as pd
+
+# Define constants
+G =1  # Gravitational constant (m^3/kg/s^2)
+M = 100     # Mass of Earth (kg)
+
+# Initial conditions
+v = 5.6         # Initial tangential speed (m/s)
+r = 2       # Initial radius from Earth's center (m)
+
+# Compute specific energy (per unit mass of the orbiter)
+E = (0.5 * v**2) - (G * M / r)
+
+# Compute semi-major axis if E < 0 (bound orbit)
+if E < 0:
+    a = - (G * M) / (2 * E)
+else:
+    a = float('inf')  # No bound orbit if E >= 0
+
+# Compute specific angular momentum. These are the initial conditions of an object 
+# that is at distance r and horizontal speed v
+h = r * v
+
+# Compute eccentricity
+e = (1 + (2 * E * h**2) / (G**2 * M**2))**0.5
+
+# Compute semi-minor axis (only for elliptical orbits)
+if e < 1:
+    b = a * (1 - e**2)**0.5  # Semi-minor axis
+else:
+    b = float('NaN')  # Undefined for non-elliptical orbits
+
+# Print results
+print(f"Eccentricity: {e:.5f}")
+print(f"Semi-Major Axis (m): {a:.5f}")
+print(f"Semi-Minor Axis (m): {b:.5f}")
+</textarea>
+</div>
+
+<button onclick="runCode()">Run</button>
+
+<div id="output"></div>
+
+<script>
+let pyodideReady = loadPyodide();
+let pyodide;
+
+const codeEl = document.getElementById("code");
+const lineNumbers = document.getElementById("lineNumbers");
+
+function updateLineNumbers() {
+    const lines = codeEl.value.split("\n").length;
+    let nums = "";
+    for (let i = 1; i <= lines; i++) nums += i + "\n";
+    lineNumbers.textContent = nums;
+}
+
+codeEl.addEventListener("input", updateLineNumbers);
+codeEl.addEventListener("scroll", () => lineNumbers.scrollTop = codeEl.scrollTop);
+updateLineNumbers();
+
+async function runCode() {
+    pyodide = await pyodideReady;
+    document.getElementById("output").innerText = "Running...";
+
+    await pyodide.loadPackage(["numpy", "pandas"]);
+
+    try {
+        await pyodide.runPythonAsync(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+`);
+
+        await pyodide.runPythonAsync(codeEl.value);
+
+        let out = await pyodide.runPythonAsync("sys.stdout.getvalue()");
+        document.getElementById("output").innerText = out;
+
+    } catch(err) {
+        document.getElementById("output").innerText = err;
+    }
+}
+</script>
+
+</body>
+</html>
