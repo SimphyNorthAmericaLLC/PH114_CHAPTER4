@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CH4 Exit Quiz — Restart on Wrong</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height: 1.45; margin: 0; padding: 24px; background: #0b0b0b; color: #f2f2f2; }
+  #quiz2 { max-width: 760px; margin: 0 auto; }
+  #q2_stem { margin: .5rem 0 1rem; font-size: 1.05rem; }
+  #q2_options { display: grid; gap: .5rem; }
+  .q2_option { border: 1px solid #333; border-radius: 10px; padding: .6rem .8rem; cursor: pointer; text-align: left; background:#121212; color:#f2f2f2; }
+  .q2_option:hover { background: #161616; }
+  #q2_feedback { margin-top: .9rem; min-height: 1.2rem; color:#aaa; }
+  #q2_nav { margin-top: 1rem; display: flex; gap: .6rem; }
+  button { padding: .55rem .9rem; border-radius: 10px; border: 1px solid #333; background: #1b1b1b; color: #f2f2f2; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div id="quiz2">
+    <h3 id="q2_progress"></h3>
+    <div id="q2_stem"></div>
+    <div id="q2_options"></div>
+    <div id="q2_feedback"></div>
+    <div id="q2_nav">
+      <button id="q2_restart" style="margin-left:auto;">Restart</button>
+    </div>
+  </div>
+
+<script>
+/* Exact wording preserved. Option order is exactly as provided (no shuffling). */
+const quiz2 = [
+  {
+    "stem": "The linear speed(s) of all points on a spinning rod (with constant ω) are",
+    "choices": [
+      "the same",
+      "different",
+      "depends on the situation"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "stem": "As a linear rod that rotates about its lower end rotates clockwise, the angular acceleration and angular speeds are",
+    "choices": [
+      "90° out of phase",
+      "0° out of phase",
+      "180° out of phase",
+      "none of these apply"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "Two fidget spinners start with the same ω but one has weight on the inner part of the flaps (spinner X) while the other one (spinner Y) has more weight on the outer part of the flaps. The spinners are otherwise identical. Which one will stop first?",
+    "choices": [
+      "X",
+      "Y",
+      "both at the same time"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "The constant force of 2 N acts perpendicularly on a uniform rod with I=1 Kg m² that can spin about its center and has a length of 1 m. The force acts 0.5 m from the end of the rod. The rod’s angular acceleration will be",
+    "choices": [
+      "0 rad/s²",
+      "1 rad/s²",
+      "0.5 rad/s²",
+      "none of these"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "Which way is more efficient to balance a hammer on your index finger?",
+    "choices": [
+      "when the head of the hammer is away from your finger",
+      "when the head of the hammer is touching your finger",
+      "it makes no difference"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A rigid object has a moment about its center of mass I = 1 Kg m². Its moment about 0.1 m away from its center of mass will be",
+    "choices": [
+      "1.01 Kg m²",
+      "1.02 Kg m²",
+      ".01 Kg m²",
+      "it cannot be derived given the available data"
+    ],
+    "correctIndex": 3
+  },
+  {
+    "stem": "A non uniform rod of length L, mass M and moment about its center I. If we need to find its moment about its end, we can use the parallel axis theorem and get",
+    "choices": [
+      "I + ML²/4",
+      "I + ML²/2",
+      "I + ML²",
+      "more information is required"
+    ],
+    "correctIndex": 3
+  },
+  {
+    "stem": "A rod is rotating about its lower end and rotates clockwise, starting from some angle with respect to the vertical. Right before it becomes parallel to the ground the rod has",
+    "choices": [
+      "maximum linear acceleration",
+      "maximum angular acceleration",
+      "maximum linear speed",
+      "none of these apply"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "stem": "A uniform disk is mounted at the end of a uniform rod. Their combined moment of inertia is",
+    "choices": [
+      "dependent on whether the disk can spin at the mounting position",
+      "not dependent on whether the disk can spin at the mounting position"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A disk pulley has two masses hung left and right vs. a dummy pulley with the same masses hung left and right. The linear acceleration of the masses will be",
+    "choices": [
+      "greater in the case of the dummy pulley",
+      "greater in the case of the disk-pulley",
+      "no difference"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "No-slip condition for a pulley with two masses hung left and right means that",
+    "choices": [
+      "all points on the pulley have the same angular acceleration",
+      "the two hung masses are not moving",
+      "the pulley’s rim and both masses have the same linear acceleration",
+      "none of these"
+    ],
+    "correctIndex": 2
+  },
+  {
+    "stem": "When a disk pulley has two masses hung left and right and the system is moving then the pulley will",
+    "choices": [
+      "spin faster and faster",
+      "spin at a constant angular speed",
+      "spin slower and slower",
+      "none of these"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "When a yoyo unwinds under the influence of gravity, then the more thickness of the string wrapped inside the yoyo the",
+    "choices": [
+      "faster the yoyo will move down",
+      "the slower the yoyo will move down",
+      "it makes no difference"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "You are on a spinning merry-go-round and you start walking towards the center. The merry-go-round will start spinning",
+    "choices": [
+      "faster",
+      "slower",
+      "it will make no difference"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "You are on a spinning merry-go-round and you start walking towards the center. The reason the motion of the system you+merry-go-round is that",
+    "choices": [
+      "friction is doing the work",
+      "the centrifugal is doing work",
+      "you are doing the work",
+      "no one is doing work"
+    ],
+    "correctIndex": 2
+  },
+  {
+    "stem": "A ring of radius 2 m has initial speed of 1 m/s and angular speed of 0.5 rad/s. The disk is left to move on an icy surface. The disk will immediately start",
+    "choices": [
+      "rolling",
+      "skidding",
+      "skidding then rolling",
+      "rolling then skidding"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "A marble rolls on a horizontal surface and at some point comes to a full stop. The same marble rolls on another horizontal surface and at some point comes to a full stop but covers greater distance than on the previous surface. What we glean from this experiment is that",
+    "choices": [
+      "the two surfaces have different friction",
+      "the two surfaces have different level of abnormalities aka bumps",
+      "no comparison can be made"
+    ],
+    "correctIndex": 1
+  },
+  {
+    "stem": "A marble rolls on a horizontal surface and at some point it starts skidding. What happened to the marble is that",
+    "choices": [
+      "an external force acted on the marble",
+      "the marble transitioned to a low friction area"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "You pull two identical yo-yos on a rough horizontal surface with the same horizontal force. One yo-yo has more string wrapped around it (yo-yo A) and eventually the pulling force is applied further away from its center of mass than the second yo-yo that has less string wrapped around it (yo-yo B). Which yo-yo will be moving faster if we assume that both yo-yos are rolling?",
+    "choices": [
+      "yo-yo A",
+      "yo-yo B",
+      "same speed",
+      "more info is needed"
+    ],
+    "correctIndex": 0
+  },
+  {
+    "stem": "You pull two identical yo-yos on a frictionless horizontal surface with the same horizontal force. One yo-yo has more string wrapped around it (yo-yo A) and eventually the pulling force is applied further away from its center of mass than the second yo-yo that has less string wrapped around it (yo-yo B). Which yo-yo will be moving faster if we assume that both yo-yos are rolling?",
+    "choices": [
+      "yo-yo A",
+      "yo-yo B",
+      "same speed",
+      "more info is needed"
+    ],
+    "correctIndex": 2
+  },
+  {
+    "stem": "A beaker containing ice is mounted on a rod that spins with some initial angular speed. As the time goes by, the ice begins to melt. What will happen to the angular speed of the beaker when all the ice has melted? [ignore all sorts of resistances]",
+    "choices": [
+      "it will slow down",
+      "it will speed up",
+      "there will be no change"
+    ],
+    "correctIndex": 0
+  }
+];
+
+const els = {
+  progress: document.getElementById('q2_progress'),
+  stem: document.getElementById('q2_stem'),
+  options: document.getElementById('q2_options'),
+  feedback: document.getElementById('q2_feedback'),
+  restart: document.getElementById('q2_restart'),
+};
+
+let idx = 0;
+let score = 0;
+
+function render() {
+  const total = quiz2.length;
+  els.progress.textContent = `Question ${idx+1} of ${total}  ·  Score: ${score}/${total}`;
+  els.stem.textContent = quiz2[idx].stem;
+  els.options.innerHTML = '';
+  els.feedback.textContent = '';
+
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  quiz2[idx].choices.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q2_option';
+    btn.type = 'button';
+    btn.innerHTML = `<strong>${letters[i]})</strong> ${text}`;
+    btn.addEventListener('click', () => handleChoice(i));
+    els.options.appendChild(btn);
+  });
+}
+
+function handleChoice(i) {
+  const correct = quiz2[idx].correctIndex;
+  if (i === correct) {
+    score++;
+    els.feedback.textContent = 'Correct.';
+    setTimeout(() => {
+      idx++;
+      if (idx < quiz2.length) {
+        render();
+      } else {
+        els.progress.textContent = `Completed · Final Score: ${score}/${quiz2.length}`;
+        els.stem.textContent = 'Quiz finished.';
+        els.options.innerHTML = '';
+        els.feedback.textContent = 'Press Restart to try again.';
+      }
+    }, 600);
+  } else {
+    els.feedback.textContent = 'Incorrect — restarting from Question 1…';
+    setTimeout(() => { idx = 0; score = 0; render(); }, 700);
+  }
+}
+
+els.restart.addEventListener('click', () => { idx = 0; score = 0; render(); });
+render();
+</script>
+</body>
+</html>
